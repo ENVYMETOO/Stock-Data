@@ -1,0 +1,99 @@
+Sub tickerboard()
+
+For Each ws In Worksheets
+
+'Variables
+Dim last_row As Long 'Set variable to hold total row value
+Dim ticker As String 'Stores the ticker symbol
+Dim tickercol As Integer 'The column the ticker will print on
+Dim value As Double
+Dim valuecol As Double
+Dim closep As Double 'Stores the closing price for a ticker
+Dim openp As Double 'Stores the opening price for a ticker
+openp = ws.Cells(2, 3).value ' Set location of the open price
+Dim yrchng As Double 'Stores the difference between the opening price and closing price
+Dim pctchng As Double
+Dim incticker As String
+Dim decticker As String
+Dim increase As Double
+increase = 0
+Dim decrease As Double
+decrease = 0
+
+tickercol = 2 'Iterator for the summary table
+Dim volume As Double 'Holds the value of volume
+volume = 0
+
+'Formatting
+last_row = ws.Cells(Rows.Count, 1).End(xlUp).Row 'Assign last row
+ws.Range("A1").EntireRow.Font.Bold = True ' Bold text on first row
+ws.Range("N1").EntireColumn.Font.Bold = True
+ws.Range("A1").EntireRow.HorizontalAlignment = xlCenter ' Center header row
+ws.Range("J1").Columns.AutoFit ' Autofit column J
+ws.Range("K1").Columns.AutoFit 'Autofit column K
+Range("N:N").Select 'Autofit column N
+Selection.Columns.AutoFit
+ws.Range("J:J").NumberFormat = "0,000" 'Add commas to column J
+
+'Labels
+ws.Cells(1, 9).value = "Ticker" 'Add label for the unique ticker row
+ws.Range("J1").value = "Total Stock Volume" 'Add label for the volume in summary col
+ws.Range("K1").value = "Yearly Change" 'Add lable for yr change in the summary col
+
+ws.Range("O1").value = "Ticker" 'Add label for the greatest % Tickers column
+ws.Range("P1").value = "Value" 'Add label for the % change amount
+ws.Range("N2").value = "Greatest % Increase" 'Add row lab for the % change section
+ws.Range("N3").value = "Greatest % Decrease" 'Add row lab for the % change section
+ws.Range("N4").value = "Greatest Total Volume" 'Add row lab for the % change section
+
+
+    For i = 2 To last_row
+        If ws.Cells(i, 1).value <> ws.Cells(i + 1, 1).value Then
+            'Stores ticker name
+            ticker = Cells(i, 1).value
+            'Includes last row
+            volume = volume + Cells(i, 7).value
+            'grab closing price
+            closep = ws.Cells(i, 6).value
+            yrchng = closep - openp
+                'Calculate greatest increase
+                If yrchng > increase Then
+                    increase = yrchng
+                    incticker = ticker
+                End If
+                'Calculate greatest decrease
+                If yrchng < decrease Then
+                    decrease = yrchng
+                    decticker = ticker
+                End If
+            'Print value to table
+            ws.Range("I" & tickercol).value = ticker
+            'Print vol to summary table
+            ws.Range("J" & tickercol).value = volume
+            ws.Range("K" & tickercol).value = yrchng
+            'Reset values
+            tickercol = tickercol + 1
+            'Resets volume
+            volume = 0
+            'Reset open ticker so it grabs next days open
+            openp = ws.Cells(i + 1, 3).value
+        Else
+            volume = volume + ws.Cells(i, 7).value
+        End If
+          
+        'Conditional formatting for yearly change
+        If ws.Cells(i, 11).value > 0 Then
+            ws.Range("K" & i).Interior.ColorIndex = 4
+        ElseIf ws.Cells(i, 11).value <= 0 Then
+            ws.Range("K" & i).Interior.ColorIndex = 3
+        End If
+
+    Next i
+    ws.Range("O2").value = incticker
+    ws.Range("O3").value = decticker
+    
+Next ws
+
+End Sub
+
+
